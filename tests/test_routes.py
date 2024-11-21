@@ -133,17 +133,69 @@ class TestAccountService(TestCase):
             'date_joined': '2024-01-01'  # Optional field, if needed
         }
 
-        response = self.client.post(BASE_URL, json = account)
-        data = response.get_json()
-        account_id = data['id']
-        response = self.client.get(f'{BASE_URL}/{account_id}', content_type = 'application/json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(data['email'], 'johndoe@example.com')
-        self.assertEqual(data['name'], 'John Doe') 
-        self.assertEqual(data['address'], '123 Main St')
-        self.assertEqual(data['phone_number'], '555-1234')
-        self.assertEqual(data['date_joined'], '2024-01-01')
+        created_response = self.client.post(BASE_URL, json = account)
+        created_data = created_response.get_json()
+        account_id = created_data['id']
+        get_response = self.client.get(f'{BASE_URL}/{account_id}', content_type = 'application/json')
+        retrieved_data = get_response.get_json()
+        self.assertEqual(get_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(retrieved_data['email'], 'johndoe@example.com')
+        self.assertEqual(retrieved_data['name'], 'John Doe') 
+        self.assertEqual(retrieved_data['address'], '123 Main St')
+        self.assertEqual(retrieved_data['phone_number'], '555-1234')
+        self.assertEqual(retrieved_data['date_joined'], '2024-01-01')
 
     def test_account_not_found(self):
         response = self.client.get(f'{BASE_URL}/0')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_update_an_account(self):
+        account = AccountFactory()
+        response = self.client.post(f'{BASE_URL}', json = account.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        new_account = response.get_json()
+        account_id = new_account['id']
+        new_account['name'] = "Something Known"
+        response = self.client.put(f'{BASE_URL}/{account_id}', json = new_account)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        updated_account = response.get_json()
+        self.assertEqual(updated_account['name'], 'Something Known')
+
+    def test_update_non_updatable_field(self):
+        account = AccountFactory()
+        response = self.client.post(f'{BASE_URL}', json = account.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        new_account = response.get_json()
+        account_id = new_account['id']
+        new_account['id'] = 999
+
+        response = self.client.put(f'{BASE_URL}/{account_id}', json = new_account)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_account_not_found(self):
+        response = self.client.put(f'{BASE_URL}/9999', json = {'name': 'not found'})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_an_account(self):
+        account = AccountFactory()
+        response = self.client.post(f'{BASE_URL}', json = account.serialize())
+        data = response.get_json()
+        account_id = data['id']
+
+        response = self.client.delete(f'{BASE_URL}/{account_id}')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def delete_account_not_found(self):
+        response = self.client.delete(f'{BASE_URL}/9999')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_method_not_allowed(self):
+        response = self.client.delete(f'{BASE_URL}')
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+    def test_list_accounts(self):
+        self._create_accounts(5)
+        response = self.client.get(f'{BASE_URL}')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), 5)
