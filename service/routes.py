@@ -14,6 +14,8 @@ from . import app  # Import Flask application
 ############################################################
 # Health Endpoint
 ############################################################
+
+
 @app.route("/health")
 def health():
     """Health Status"""
@@ -23,6 +25,8 @@ def health():
 ######################################################################
 # GET INDEX
 ######################################################################
+
+
 @app.route("/")
 def index():
     """Root URL response"""
@@ -39,6 +43,8 @@ def index():
 ######################################################################
 # CREATE A NEW ACCOUNT
 ######################################################################
+
+
 @app.route("/accounts", methods=["POST"])
 def create_accounts():
     """
@@ -47,13 +53,13 @@ def create_accounts():
     """
     app.logger.info("Request to create an Account")
     check_content_type("application/json")
-    account = Account()
+    account=Account()
     account.deserialize(request.get_json())
     account.create()
-    message = account.serialize()
+    message=account.serialize()
     # Uncomment once get_accounts has been implemented
     # location_url = url_for("get_accounts", account_id=account.id, _external=True)
-    location_url = "/"  # Remove once get_accounts has been implemented
+    location_url="/"  # Remove once get_accounts has been implemented
     return make_response(
         jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
     )
@@ -63,6 +69,7 @@ def create_accounts():
 ######################################################################
 
 # ... place you code here to LIST accounts ...
+
 
 
 @app.route('/accounts', methods=['GET'])
@@ -110,10 +117,8 @@ def update_account(account_id):
             status.HTTP_400_BAD_REQUEST,
             "cannot update immutable field"
         )
-
     account.deserialize(data)
     account.update()
-
     return account.serialize(), status.HTTP_200_OK
 
 
