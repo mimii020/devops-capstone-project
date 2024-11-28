@@ -92,9 +92,8 @@ def read_account(account_id):
     app.logger.info('request to read an account with the id %s', account_id)
     account = Account.find(account_id)
     if not account:
-        abort(
-            status.HTTP_404_NOT_FOUND,
-            f'account with id {account_id} could not be found')
+        abort(status.HTTP_404_NOT_FOUND,
+              f'account with id {account_id} could not be found')
     return jsonify(account.serialize()), status.HTTP_200_OK
 
 ######################################################################
@@ -118,6 +117,7 @@ def update_account(account_id):
             status.HTTP_400_BAD_REQUEST,
             "cannot update immutable field"
         )
+
     account.deserialize(data)
     account.update()
     return account.serialize(), status.HTTP_200_OK
