@@ -53,13 +53,13 @@ def create_accounts():
     """
     app.logger.info("Request to create an Account")
     check_content_type("application/json")
-    account = Account()
+    account=Account()
     account.deserialize(request.get_json())
     account.create()
-    message = account.serialize()
+    message=account.serialize()
     # Uncomment once get_accounts has been implemented
     # location_url = url_for("get_accounts", account_id=account.id, _external=True)
-    location_url = "/"  # Remove once get_accounts has been implemented
+    location_url="/"  # Remove once get_accounts has been implemented
     return make_response(
         jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
     )
@@ -71,12 +71,13 @@ def create_accounts():
 # ... place you code here to LIST accounts ...
 
 
+
 @app.route('/accounts', methods=['GET'])
 def list_all_accounts():
     """ List all Accounts This endpoint will list all Accounts """
     app.logger.info('Request to list all accounts')
-    accounts = Account.all()
-    account_list = [account.serialize() for account in accounts]
+    accounts=Account.all()
+    account_list=[account.serialize() for account in accounts]
 
     app.logger.info('Returning %s accounts', len(account_list))
     return jsonify(account_list), status.HTTP_200_OK
@@ -90,11 +91,9 @@ def list_all_accounts():
 @app.route('/accounts/<int:account_id>', methods=['GET'])
 def read_account(account_id):
     app.logger.info('request to read an account with the id %s', account_id)
-    account = Account.find(account_id)
+    account=Account.find(account_id)
     if not account:
-        abort(
-            status.HTTP_404_NOT_FOUND,
-            f'account with id {account_id} could not be found')
+        abort(status.HTTP_404_NOT_FOUND, f'account with id {account_id} could not be found')
     return jsonify(account.serialize()), status.HTTP_200_OK
 
 ######################################################################
@@ -104,20 +103,21 @@ def read_account(account_id):
 # ... place you code here to UPDATE an account ...
 
 
-@app.route('/accounts/<int:account_id>', methods=['PUT'])
+@app.route('/accounts/<int:account_id>', methods = ['PUT'])
 def update_account(account_id):
-    account = Account.find(account_id)
+    account=Account.find(account_id)
     if not account:
         abort(
             status.HTTP_404_NOT_FOUND,
             f'account with the id {account_id} not found'
-        )
-    data = request.get_json()
+        ) 
+    data=request.get_json()
     if 'id' in data and data['id'] != account_id:
         abort(
             status.HTTP_400_BAD_REQUEST,
             "cannot update immutable field"
         )
+
     account.deserialize(data)
     account.update()
     return account.serialize(), status.HTTP_200_OK
@@ -128,9 +128,9 @@ def update_account(account_id):
 ######################################################################
 
 # ... place you code here to DELETE an account ...
-@app.route('/accounts/<int:account_id>', methods=['DELETE'])
+@app.route('/accounts/<int:account_id>', methods = ['DELETE'])
 def delete_an_account(account_id):
-    account = Account.find(account_id)
+    account=Account.find(account_id)
     if not account:
         abort(
             status.HTTP_404_NOT_FOUND,
